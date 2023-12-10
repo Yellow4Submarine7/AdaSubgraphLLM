@@ -468,7 +468,10 @@ class FoldMetricBase(object):
             self._strict_fold_acc.append(self._fold_metric_saver[self._cur_k].strict_best_acc)
 
         if self._cur_k + 1 >= self._k_fold:
-            self._fold_metric_saver[self._cur_k].close(close_tb=True)
+            if isinstance(self._fold_metric_saver[self._cur_k], TensorBoardSaver):
+                self._fold_metric_saver[self._cur_k].close(close_tb=True)
+            else:
+                self._fold_metric_saver[self._cur_k].close()
             return
         self._fold_metric_saver[self._cur_k].close()
         # 保存当前fold的acc

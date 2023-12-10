@@ -29,6 +29,7 @@ import torch_geometric.transforms as T
 
 from sklearn.model_selection import StratifiedKFold
 
+#normalize the degree
 class NormalizedDegree(object):
     def __init__(self, mean, std):
         self.mean = mean
