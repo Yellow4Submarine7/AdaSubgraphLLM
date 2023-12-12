@@ -239,9 +239,12 @@ def train_GNN(args,
             #最后将三者相加得到总损失loss
             #所以这里的learn函数就是让agent利用总损失作为奖励进行学习
             #也就是预测对了就是正奖励，预测错了就是负奖励
+            #当然learn也训练GNN提升预测能力
             learn_acc, learn_loss = learn(train_loader, model, agent, optimizer)
             eval_acc, eval_loss = eval(eval_loader, model, agent)
             if eval_acc > best_acc:
+                #如果在验证集上的准确率超过了之前的最好准确率
+                #就将当前的agent保存下来
                 best_depth_selector_net, \
                 best_neighbor_slector_net = agent.snapshot()
                 best_acc = eval_acc
@@ -252,8 +255,11 @@ def train_GNN(args,
                         neighbor=best_neighbor_slector_net)
         test_acc, _ = test(test_loader, model, agent)
         del model, agent, optimizer
+        #garbage collection
         gc.collect()
 
+        #正常训练阶段
+        #重新初始化模型，传入之前获得的best agent
         model, agent, optimizer = init_model(graphs, args)
         agent.load_best(depth=best_depth_selector_net,
                         neighbor=best_neighbor_slector_net)
