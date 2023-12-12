@@ -197,6 +197,7 @@ def init_model(graphs, args, k_fold=10):
                                           weight_decay=args.weight_decay)
     return net, agent, optimizer
 
+#逻辑主函数
 def train_GNN(args, 
             folds,
             graphs, 
@@ -210,6 +211,10 @@ def train_GNN(args,
         val_dataset = graphs[val_idx]
 
         batch_size = args.batch_size
+        #如果数据集中含有邻接矩阵，则使用DenseLoader
+        #否则使用DataLoader
+        #DenseLoader和DataLoader的区别在于，DenseLoader会将邻接矩阵转换为稀疏矩阵
+        #他们都定义于torch_geometric.loader中
         if 'adj' in train_dataset[0]:
             train_loader = DenseLoader(train_dataset, batch_size, shuffle=True)
             eval_loader = DenseLoader(val_dataset, batch_size, shuffle=False)
@@ -223,9 +228,17 @@ def train_GNN(args,
         model.to(torch.device('cuda'))
         model.reset_parameters()
         # optimizer = Adam(model.parameters(), lr=args.lr, weight
+
+        #强化学习阶段
         trange = tqdm(range(1, args.RL_episodes+1))
         best_acc = 0.0
         for r_episode in trange:
+            #传入的model是一个Net类的实例
+            #Net计算节点嵌入，子图嵌入和子图标签
+            #然后计算互信息损失loss_mi，子图损失loss_sub，标签损失loss_label
+            #最后将三者相加得到总损失loss
+            #所以这里的learn函数就是让agent利用总损失作为奖励进行学习
+            #也就是预测对了就是正奖励，预测错了就是负奖励
             learn_acc, learn_loss = learn(train_loader, model, agent, optimizer)
             eval_acc, eval_loss = eval(eval_loader, model, agent)
             if eval_acc > best_acc:

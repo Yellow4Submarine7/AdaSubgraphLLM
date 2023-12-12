@@ -6,6 +6,8 @@ from torch import tensor
 from torch.optim import Adam
 from sklearn.model_selection import StratifiedKFold
 from torch_geometric.loader import DataLoader, DenseDataLoader as DenseLoader
+
+#此处learn不仅训练agent，还训练模型进行预测
 def learn(loader, model, agent, optimizer, recorder=None):
     correct, total_loss = 0, 0
     agent._train()
@@ -13,6 +15,8 @@ def learn(loader, model, agent, optimizer, recorder=None):
     for graph in loader:
         graph = graph.cuda()
         optimizer.zero_grad()
+        #这里的model传入的是Net类的实例
+        #计算的损失是互信息，子图，label的总损失
         predicts, reward, loss = model(graph, agent)
         # loss = F.nll_loss(predicts, graph.y.view(-1))
         loss.backward()
@@ -22,7 +26,7 @@ def learn(loader, model, agent, optimizer, recorder=None):
         # if recorder and reward is not None:
         #     r = (torch.ones_like(reward)*-0.5).masked_fill_(reward, 0.5).squeeze()
         #     recorder.append(r)
-
+        #这里的agent就是深度agent和邻居agent组合的AgentChain的实例
         agent.fed_reward(reward)
         if agent.is_full():
             depth_loss, neighbor_loss = agent.train()
