@@ -163,7 +163,7 @@ def init_model(graphs, args, k_fold=10):
                 mi_coeff=args.mi_coeff,
                 device=torch.device('cuda'))
     net.to(torch.device('cuda'))
-    
+    #重点研究depth selector和neighbor selector 
     depth_selector = DepthSelector(action_num=args.action_num,
                                     fixed_k_hop=args.fixed_k_hop,
                                     lr=args.RL_lr,
