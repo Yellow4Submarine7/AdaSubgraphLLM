@@ -15,12 +15,17 @@ import torch.nn.functional as F
 from sklearn import preprocessing
 from sklearn.metrics import f1_score
 
+#继承自在Qnet中定义的记忆池
 class DepthMemory(Memory):
     def __init__(self, *args, **kwars):
         super(DepthMemory, self).__init__(*args, **kwars)
     
     def fed_reward(self, reward):
+        #生成(状态，奖励)对
+        #state在memory中定义了,
         for index, r in zip(range(self.fed_reward_index, len(self.memory)), reward):
+            #memory是一个列表，memory[index]是一个具名元组，有state, action, batch, reward四个属性
+            #这里取出state属性，然后将reward扩展到与state相同的维度, .view(-1, 1)将reward转换为列向量
             self.memory[index].reward = r.expand(self.memory[index].state.shape[0]).view(-1, 1)
         self.fed_reward_index = len(self.memory)
 
